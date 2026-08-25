@@ -12,7 +12,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 STATS_FILE = REPO_ROOT / ".github" / "stats.json"
-README_FILE = REPO_ROOT / "profile" / "README.md"
+README_FILE = REPO_ROOT / "README.md"
 
 START_TIME = time.time()
 

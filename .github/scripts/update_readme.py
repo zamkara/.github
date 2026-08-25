@@ -15,7 +15,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 GITHUB_DIR = REPO_ROOT / ".github"
 CONFIG_FILE = GITHUB_DIR / "config.json"
-DISTROS_FILE = GITHUB_DIR / "scripts" / "distros.json"
+ASCII_DIR = GITHUB_DIR / "ascii"
+DISTROS_FILE = ASCII_DIR / "distros.json"
 STATS_FILE = GITHUB_DIR / "stats.json"
 SVG_FILE = GITHUB_DIR / "neofetch.svg"
 README_FILE = REPO_ROOT / "README.md"
@@ -31,7 +32,7 @@ def load_config():
             print(f"Warning: Failed to parse config.json ({e}), using defaults.")
     return {}
 
-def load_distros():
+def load_distro_meta():
     if DISTROS_FILE.exists():
         try:
             with open(DISTROS_FILE, "r") as f:
@@ -203,33 +204,44 @@ def format_uptime(total_seconds, runs_count):
     time_str = " ".join(parts)
     return f"{time_str} ({runs_count} runs)"
 
-def get_distro_ascii(cfg, distros_dict):
+def get_distro_ascii(cfg, distros_meta):
     distro_choice = cfg.get("distro", "arch").lower().strip()
-    
-    default_arch = {
-        "color": "#1793d1",
-        "ascii": [
-            "       /\\         ",
-            "      /  \\        ",
-            "     /\\   \\       ",
-            "    /      \\      ",
-            "   /   ,,   \\     ",
-            "  /   |  |  -\\    ",
-            " /_-''    ''-_\\   ",
-        ]
-    }
 
     if distro_choice == "auto":
         os_lower = get_os_name().lower()
-        for k in distros_dict:
+        for k in distros_meta:
             if k in os_lower:
                 distro_choice = k
                 break
+        if distro_choice == "auto":
+            distro_choice = "arch"
 
-    distro_info = distros_dict.get(distro_choice, default_arch)
-    raw_lines = distro_info.get("ascii", default_arch["ascii"])
-    logo_lines = [re.sub(r"\$\{[a-zA-Z0-9_]+\}", "", l) for l in raw_lines]
-    logo_color = distro_info.get("color", "#1793d1")
+    meta = distros_meta.get(distro_choice, {})
+    logo_color = meta.get("color", "#1793d1")
+
+    # Read from .github/ascii/<distro>.txt
+    txt_file = ASCII_DIR / f"{distro_choice}.txt"
+    logo_lines = []
+    if txt_file.exists():
+        try:
+            with open(txt_file, "r") as f:
+                logo_lines = [l.rstrip("\r\n") for l in f.readlines()]
+                # Strip trailing empty lines
+                while logo_lines and not logo_lines[-1].strip():
+                    logo_lines.pop()
+        except Exception:
+            pass
+
+    if not logo_lines:
+        logo_lines = [
+            "       /\\",
+            "      /  \\",
+            "     /\\   \\",
+            "    /      \\",
+            "   /   ,,   \\",
+            "  /   |  |  -\\",
+            " /_-''    ''-_\\",
+        ]
 
     custom_col = cfg.get("custom_colors", {})
     if custom_col.get("logo"):
@@ -237,8 +249,8 @@ def get_distro_ascii(cfg, distros_dict):
 
     return logo_lines, logo_color
 
-def generate_neofetch_svg(cfg, distros_dict, user_header, os_name, host_name, kernel_name, uptime_str, pkgs_count, memory_str):
-    logo_lines, logo_color = get_distro_ascii(cfg, distros_dict)
+def generate_neofetch_svg(cfg, distros_meta, user_header, os_name, host_name, kernel_name, uptime_str, pkgs_count, memory_str):
+    logo_lines, logo_color = get_distro_ascii(cfg, distros_meta)
 
     info_rows = [
         ("", user_header, True),
@@ -251,28 +263,18 @@ def generate_neofetch_svg(cfg, distros_dict, user_header, os_name, host_name, ke
     ]
 
     total_rows = max(len(logo_lines), len(info_rows))
-    
-    max_logo_w = max(len(l) for l in logo_lines) if logo_lines else 18
-    while len(logo_lines) < total_rows:
-        logo_lines.append(" " * max_logo_w)
-    
-    while len(info_rows) < total_rows:
-        info_rows.append(("", "", False))
 
     fontSize = 13
-    lineHeight = 15.5
+    lineHeight = 16
     paddingY = 8
-    paddingX = 4
-
-    max_line_len = 0
-    for i in range(total_rows):
-        title, val, _ = info_rows[i]
-        line_str = logo_lines[i] + title + val
-        if len(line_str) > max_line_len:
-            max_line_len = len(line_str)
-
+    logo_x = 8
     charWidth = 7.8
-    width = int(max_line_len * charWidth) + paddingX * 2 + 10
+
+    max_logo_w = max(len(l) for l in logo_lines) if logo_lines else 14
+    max_info_w = max(len(t + v) for t, v, _ in info_rows)
+
+    info_x = int(logo_x + max_logo_w * charWidth + 24)
+    width = int(info_x + max_info_w * charWidth + 16)
     height = int(total_rows * lineHeight) + paddingY * 2
 
     custom_col = cfg.get("custom_colors", {})
@@ -283,19 +285,22 @@ def generate_neofetch_svg(cfg, distros_dict, user_header, os_name, host_name, ke
     svg_lines = []
     for i in range(total_rows):
         y = int(paddingY + (i + 1) * lineHeight - 3)
-        logo = html.escape(logo_lines[i])
-        title, val, is_header = info_rows[i]
-        escaped_title = html.escape(title)
-        escaped_val = html.escape(val)
 
-        if not val and not title:
-            line_html = f'<tspan class="logo">{logo}</tspan>'
-        elif is_header:
-            line_html = f'<tspan class="logo">{logo}</tspan><tspan class="header">{escaped_val}</tspan>'
-        else:
-            line_html = f'<tspan class="logo">{logo}</tspan><tspan class="title">{escaped_title}</tspan><tspan class="val">{escaped_val}</tspan>'
+        # Col 1: Logo (rendered at fixed logo_x)
+        if i < len(logo_lines) and logo_lines[i].strip():
+            esc_logo = html.escape(logo_lines[i])
+            svg_lines.append(f'  <text x="{logo_x}" y="{y}" xml:space="preserve" class="logo">{esc_logo}</text>')
 
-        svg_lines.append(f'    <text x="{paddingX}" y="{y}" xml:space="preserve">{line_html}</text>')
+        # Col 2: Info (rendered at fixed info_x)
+        if i < len(info_rows):
+            title, val, is_header = info_rows[i]
+            if is_header:
+                esc_val = html.escape(val)
+                svg_lines.append(f'  <text x="{info_x}" y="{y}" xml:space="preserve" class="header">{esc_val}</text>')
+            elif title or val:
+                esc_title = html.escape(title)
+                esc_val = html.escape(val)
+                svg_lines.append(f'  <text x="{info_x}" y="{y}" xml:space="preserve"><tspan class="title">{esc_title}</tspan><tspan class="val">{esc_val}</tspan></text>')
 
     svg_content = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">
   <style>
@@ -318,22 +323,22 @@ def generate_neofetch_svg(cfg, distros_dict, user_header, os_name, host_name, ke
 
 def update_readme():
     cfg = load_config()
-    distros_dict = load_distros()
+    distros_meta = load_distro_meta()
     stats = load_stats()
-    
+
     elapsed = max(int(time.time() - START_TIME), 15)
     stats["total_seconds"] = stats.get("total_seconds", 0) + elapsed
     stats["runs_count"] = stats.get("runs_count", 0) + 1
     stats["last_run"] = datetime.now(timezone.utc).isoformat()
-    
+
     save_stats(stats)
-    
+
     user = get_user_at_host(cfg)
     os_name = get_os_name()
     host_name = cfg.get("host", "ASUS TUF Gaming F15 FX506LH_FX506LH 1.0")
     if host_name == "auto":
         host_name = "ASUS TUF Gaming F15 FX506LH_FX506LH 1.0"
-    
+
     kernel_name = get_kernel(cfg)
     uptime_str = format_uptime(stats["total_seconds"], stats["runs_count"])
     pkgs_count = get_packages()
@@ -341,7 +346,7 @@ def update_readme():
 
     # Generate .github/neofetch.svg
     SVG_FILE.parent.mkdir(parents=True, exist_ok=True)
-    svg_content = generate_neofetch_svg(cfg, distros_dict, user, os_name, host_name, kernel_name, uptime_str, pkgs_count, memory_str)
+    svg_content = generate_neofetch_svg(cfg, distros_meta, user, os_name, host_name, kernel_name, uptime_str, pkgs_count, memory_str)
     with open(SVG_FILE, "w") as f:
         f.write(svg_content)
 

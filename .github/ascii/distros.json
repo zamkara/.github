@@ -1,0 +1,186 @@
+{
+  "alpine": {
+    "color": "#0d597f",
+    "file": "ascii/alpine.txt"
+  },
+  "android": {
+    "color": "#98c379",
+    "file": "ascii/android.txt"
+  },
+  "arch": {
+    "color": "#1793d1",
+    "file": "ascii/arch.txt"
+  },
+  "arco": {
+    "color": "#1793d1",
+    "file": "ascii/arco.txt"
+  },
+  "artix": {
+    "color": "#1793d1",
+    "file": "ascii/artix.txt"
+  },
+  "bedrock": {
+    "color": "#61afef",
+    "file": "ascii/bedrock.txt"
+  },
+  "buildroot": {
+    "color": "#e5c07b",
+    "file": "ascii/buildroot.txt"
+  },
+  "centos": {
+    "color": "#c678dd",
+    "file": "ascii/centos.txt"
+  },
+  "dahlia": {
+    "color": "#e06c75",
+    "file": "ascii/dahlia.txt"
+  },
+  "debian": {
+    "color": "#d70a53",
+    "file": "ascii/debian.txt"
+  },
+  "devuan": {
+    "color": "#56b6c2",
+    "file": "ascii/devuan.txt"
+  },
+  "dragonfly": {
+    "color": "#e06c75",
+    "file": "ascii/dragonfly.txt"
+  },
+  "endeavour": {
+    "color": "#7b3e9e",
+    "file": "ascii/endeavour.txt"
+  },
+  "fedora": {
+    "color": "#294172",
+    "file": "ascii/fedora.txt"
+  },
+  "freebsd": {
+    "color": "#ab2b28",
+    "file": "ascii/freebsd.txt"
+  },
+  "garuda": {
+    "color": "#00d0ff",
+    "file": "ascii/garuda.txt"
+  },
+  "gentoo": {
+    "color": "#d6c8ff",
+    "file": "ascii/gentoo.txt"
+  },
+  "gnu": {
+    "color": "#e5c07b",
+    "file": "ascii/gnu.txt"
+  },
+  "guixsd": {
+    "color": "#e5c07b",
+    "file": "ascii/guixsd.txt"
+  },
+  "haiku": {
+    "color": "#e5c07b",
+    "file": "ascii/haiku.txt"
+  },
+  "hydroos": {
+    "color": "#61afef",
+    "file": "ascii/hydroos.txt"
+  },
+  "irix": {
+    "color": "#e06c75",
+    "file": "ascii/irix.txt"
+  },
+  "kdeneon": {
+    "color": "#56b6c2",
+    "file": "ascii/kdeneon.txt"
+  },
+  "linuxlite": {
+    "color": "#e5c07b",
+    "file": "ascii/linuxlite.txt"
+  },
+  "linuxmint": {
+    "color": "#87cf3e",
+    "file": "ascii/linuxmint.txt"
+  },
+  "linux": {
+    "color": "#61afef",
+    "file": "ascii/linux.txt"
+  },
+  "macos": {
+    "color": "#33ccff",
+    "file": "ascii/macos.txt"
+  },
+  "mageia": {
+    "color": "#98c379",
+    "file": "ascii/mageia.txt"
+  },
+  "manjaro": {
+    "color": "#35bf5c",
+    "file": "ascii/manjaro.txt"
+  },
+  "minix": {
+    "color": "#61afef",
+    "file": "ascii/minix.txt"
+  },
+  "netbsd": {
+    "color": "#e5c07b",
+    "file": "ascii/netbsd.txt"
+  },
+  "nixos": {
+    "color": "#5277c3",
+    "file": "ascii/nixos.txt"
+  },
+  "openbsd": {
+    "color": "#e5c07b",
+    "file": "ascii/openbsd.txt"
+  },
+  "opensusetumbleweed": {
+    "color": "#98c379",
+    "file": "ascii/opensusetumbleweed.txt"
+  },
+  "opensuse": {
+    "color": "#98c379",
+    "file": "ascii/opensuse.txt"
+  },
+  "openwrt": {
+    "color": "#e06c75",
+    "file": "ascii/openwrt.txt"
+  },
+  "parabola": {
+    "color": "#c678dd",
+    "file": "ascii/parabola.txt"
+  },
+  "pop_os": {
+    "color": "#56b6c2",
+    "file": "ascii/pop_os.txt"
+  },
+  "raspbian": {
+    "color": "#e06c75",
+    "file": "ascii/raspbian.txt"
+  },
+  "serenityos": {
+    "color": "#61afef",
+    "file": "ascii/serenityos.txt"
+  },
+  "slackware": {
+    "color": "#61afef",
+    "file": "ascii/slackware.txt"
+  },
+  "solus": {
+    "color": "#61afef",
+    "file": "ascii/solus.txt"
+  },
+  "sunos": {
+    "color": "#e5c07b",
+    "file": "ascii/sunos.txt"
+  },
+  "ubuntu": {
+    "color": "#e95420",
+    "file": "ascii/ubuntu.txt"
+  },
+  "void": {
+    "color": "#478061",
+    "file": "ascii/void.txt"
+  },
+  "xeonix": {
+    "color": "#98c379",
+    "file": "ascii/xeonix.txt"
+  }
+}

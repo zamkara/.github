@@ -3,8 +3,10 @@ import os
 import sys
 import json
 import time
+import shutil
 import platform
 import subprocess
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -14,10 +16,36 @@ README_FILE = REPO_ROOT / "profile" / "README.md"
 
 START_TIME = time.time()
 
-import urllib.request
+def get_user_at_host():
+    return "zam@kara"
+
+def get_os_name():
+    pretty = None
+    if os.path.exists("/etc/os-release"):
+        try:
+            with open("/etc/os-release") as f:
+                for line in f:
+                    if line.startswith("PRETTY_NAME="):
+                        pretty = line.split("=", 1)[1].strip("\"' \n")
+                        break
+                    elif line.startswith("NAME=") and not pretty:
+                        pretty = line.split("=", 1)[1].strip("\"' \n")
+        except Exception:
+            pass
+    if not pretty:
+        pretty = "Arch Linux"
+    return f"{pretty} [{platform.machine()}]"
 
 def get_kernel():
-    # Fetch latest official Arch Linux Zen kernel version from Arch repository API
+    # If running locally on Arch with zen kernel
+    try:
+        rel = platform.release().strip()
+        if "zen" in rel:
+            return f"{rel} ({platform.machine()})"
+    except Exception:
+        pass
+
+    # Fetch official latest Arch Linux Zen kernel release
     try:
         url = "https://archlinux.org/packages/extra/x86_64/linux-zen/json/"
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (GitHubActions)"})
@@ -26,45 +54,49 @@ def get_kernel():
             pkgver = data.get("pkgver", "")
             pkgrel = data.get("pkgrel", "")
             if pkgver and pkgrel:
-                # Format: 7.1.9.zen1 + 2 -> 7.1.9-zen1-2-zen
-                return pkgver.replace(".zen", "-zen") + f"-{pkgrel}-zen"
+                formatted = pkgver.replace(".zen", "-zen") + f"-{pkgrel}-zen"
+                return f"{formatted} ({platform.machine()})"
     except Exception as e:
-        print(f"Notice: Failed to fetch Arch Linux API ({e}), falling back...")
+        print(f"Notice: Failed to fetch Arch Linux API ({e})")
 
-    # Fallback if local arch zen kernel is detected or fallback release
-    try:
-        release = platform.release().strip()
-        if "zen" in release:
-            return release
-    except Exception:
-        pass
-
-    return "7.1.9-zen1-2-zen"
+    return f"7.1.9-zen1-2-zen ({platform.machine()})"
 
 def get_packages():
-    # Try pacman first (if Arch), then dpkg (Ubuntu runner), then rpm
-    try:
-        res = subprocess.run(["pacman", "-Qq"], capture_output=True, text=True, check=True)
-        return len(res.stdout.strip().splitlines())
-    except Exception:
-        pass
+    counts = []
+    # pacman
+    if shutil.which("pacman"):
+        try:
+            r = subprocess.run(["pacman", "-Qq"], capture_output=True, text=True)
+            if r.returncode == 0:
+                c = len(r.stdout.strip().splitlines())
+                if c > 0:
+                    counts.append(f"{c} (pacman)")
+        except Exception:
+            pass
+    # flatpak
+    if shutil.which("flatpak"):
+        try:
+            r = subprocess.run(["flatpak", "list"], capture_output=True, text=True)
+            if r.returncode == 0:
+                c = len(r.stdout.strip().splitlines())
+                if c > 0:
+                    counts.append(f"{c} (flatpak)")
+        except Exception:
+            pass
+    # dpkg
+    if shutil.which("dpkg-query"):
+        try:
+            r = subprocess.run(["dpkg-query", "-f", ".\\n", "-W"], capture_output=True, text=True)
+            if r.returncode == 0:
+                c = len(r.stdout.strip().splitlines())
+                if c > 0:
+                    counts.append(f"{c} (dpkg)")
+        except Exception:
+            pass
 
-    try:
-        res = subprocess.run(["dpkg-query", "-f", ".\\n", "-W"], capture_output=True, text=True, check=True)
-        return len(res.stdout.strip().splitlines())
-    except Exception:
-        pass
-
-    try:
-        res = subprocess.run(["rpm", "-qa"], capture_output=True, text=True, check=True)
-        return len(res.stdout.strip().splitlines())
-    except Exception:
-        pass
-
-    return 0
+    return ", ".join(counts) if counts else "0 packages"
 
 def get_memory():
-    # Read /proc/meminfo in MB
     try:
         meminfo = {}
         with open("/proc/meminfo", "r") as f:
@@ -73,14 +105,15 @@ def get_memory():
                 if len(parts) == 2:
                     key = parts[0].strip()
                     val = parts[1].strip().split()[0]
-                    meminfo[key] = int(val) # in kB
+                    meminfo[key] = int(val)
 
         total_mb = meminfo.get("MemTotal", 0) // 1024
         avail_mb = meminfo.get("MemAvailable", meminfo.get("MemFree", 0)) // 1024
         used_mb = total_mb - avail_mb
-        return f"{used_mb}M / {total_mb}M"
+        pct = (used_mb / total_mb * 100) if total_mb > 0 else 0
+        return f"{used_mb}MiB / {total_mb}MiB ({pct:.1f}%)"
     except Exception:
-        return "0M / 0M"
+        return "0MiB / 0MiB (0%)"
 
 def load_stats():
     if STATS_FILE.exists():
@@ -96,17 +129,27 @@ def save_stats(stats):
     with open(STATS_FILE, "w") as f:
         json.dump(stats, f, indent=2)
 
-def format_uptime(total_seconds):
-    hours = int(total_seconds // 3600)
+def format_uptime(total_seconds, runs_count):
+    days = int(total_seconds // 86400)
+    hours = int((total_seconds % 86400) // 3600)
     minutes = int((total_seconds % 3600) // 60)
-    if hours > 0:
-        return f"{hours}h {minutes}m"
-    return f"{minutes}m"
+    seconds = int(total_seconds % 60)
+
+    parts = []
+    if days > 0:
+        parts.append(f"{days}d")
+    if hours > 0 or days > 0:
+        parts.append(f"{hours}h")
+    if minutes > 0 or hours > 0 or days > 0:
+        parts.append(f"{minutes}m")
+    parts.append(f"{seconds}s")
+
+    time_str = " ".join(parts)
+    return f"{time_str} ({runs_count} runs)"
 
 def update_readme():
     stats = load_stats()
     
-    # Calculate elapsed runner time (at least 15s per run to reflect runner execution overhead)
     elapsed = max(int(time.time() - START_TIME), 15)
     stats["total_seconds"] = stats.get("total_seconds", 0) + elapsed
     stats["runs_count"] = stats.get("runs_count", 0) + 1
@@ -114,11 +157,11 @@ def update_readme():
     
     save_stats(stats)
     
-    user = "zam@kara"
-    os_name = "Arch Linux"
+    user = get_user_at_host()
+    os_name = get_os_name()
     host_name = "ASUS TUF Gaming F15 FX506LH_FX506LH 1.0"
     kernel_name = get_kernel()
-    uptime_str = format_uptime(stats["total_seconds"])
+    uptime_str = format_uptime(stats["total_seconds"], stats["runs_count"])
     pkgs_count = get_packages()
     memory_str = get_memory()
 

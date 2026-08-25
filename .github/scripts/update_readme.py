@@ -10,7 +10,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 STATS_FILE = REPO_ROOT / ".github" / "stats.json"
-README_FILE = REPO_ROOT / "README.md"
+README_FILE = REPO_ROOT / ".github" / "profile" / "README.md"
 
 START_TIME = time.time()
 
@@ -111,6 +111,7 @@ def update_readme():
  /_-''    ''-_\\   memory {memory_str}
 ```
 """
+    README_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(README_FILE, "w") as f:
         f.write(content)
 

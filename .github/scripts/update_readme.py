@@ -3,6 +3,7 @@ import os
 import sys
 import json
 import time
+import html
 import shutil
 import platform
 import subprocess
@@ -13,11 +14,25 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 STATS_FILE = REPO_ROOT / ".github" / "stats.json"
 README_FILE = REPO_ROOT / "README.md"
+SVG_FILE = REPO_ROOT / "neofetch.svg"
 
 START_TIME = time.time()
 
 def get_user_at_host():
-    return "zam@kara"
+    repo = os.environ.get("GITHUB_REPOSITORY", "")
+    if "/" in repo:
+        repo_name = repo.split("/")[-1]
+        return f"{repo_name}@github"
+    try:
+        r = subprocess.run(["git", "config", "--get", "remote.origin.url"], capture_output=True, text=True)
+        if r.returncode == 0 and r.stdout.strip():
+            url = r.stdout.strip()
+            repo_name = url.split("/")[-1].replace(".git", "")
+            if repo_name:
+                return f"{repo_name}@github"
+    except Exception:
+        pass
+    return "zamkara@github"
 
 def get_os_name():
     pretty = None
@@ -147,6 +162,78 @@ def format_uptime(total_seconds, runs_count):
     time_str = " ".join(parts)
     return f"{time_str} ({runs_count} runs)"
 
+def generate_neofetch_svg(user_header, os_name, host_name, kernel_name, uptime_str, pkgs_count, memory_str):
+    logo_lines = [
+        r"       /\         ",
+        r"      /  \        ",
+        r"     /\   \       ",
+        r"    /      \      ",
+        r"   /   ,,   \     ",
+        r"  /   |  |  -\    ",
+        r" /_-''    ''-_\   ",
+    ]
+
+    info_rows = [
+        ("", user_header, True),
+        ("os        ", os_name, False),
+        ("host      ", host_name, False),
+        ("kernel    ", kernel_name, False),
+        ("uptime    ", uptime_str, False),
+        ("pkgs      ", pkgs_count, False),
+        ("memory    ", memory_str, False),
+    ]
+
+    fontSize = 13
+    lineHeight = 21
+    paddingY = 12
+    paddingX = 8
+
+    max_line_len = 0
+    for i in range(len(logo_lines)):
+        title, val, is_header = info_rows[i]
+        line_str = logo_lines[i] + title + val
+        if len(line_str) > max_line_len:
+            max_line_len = len(line_str)
+
+    charWidth = 7.8
+    width = int(max_line_len * charWidth) + paddingX * 2 + 20
+    height = len(logo_lines) * lineHeight + paddingY * 2
+
+    svg_lines = []
+    for i in range(len(logo_lines)):
+        y = paddingY + (i + 1) * lineHeight - 5
+        logo = html.escape(logo_lines[i])
+        title, val, is_header = info_rows[i]
+        escaped_title = html.escape(title)
+        escaped_val = html.escape(val)
+
+        if is_header:
+            line_html = f'<tspan class="logo">{logo}</tspan><tspan class="header">{escaped_val}</tspan>'
+        else:
+            line_html = f'<tspan class="logo">{logo}</tspan><tspan class="title">{escaped_title}</tspan><tspan class="val">{escaped_val}</tspan>'
+
+        svg_lines.append(f'    <text x="{paddingX}" y="{y}" xml:space="preserve">{line_html}</text>')
+
+    svg_content = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">
+  <style>
+    text {{
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: {fontSize}px;
+    }}
+    .logo {{ fill: #1793d1; font-weight: bold; }}
+    .header {{ fill: #58a6ff; font-weight: bold; }}
+    .title {{ fill: #58a6ff; font-weight: 600; }}
+    .val {{ fill: #c9d1d9; }}
+    @media (prefers-color-scheme: light) {{
+      .logo {{ fill: #0078b4; }}
+      .header {{ fill: #0969da; }}
+      .title {{ fill: #0969da; }}
+      .val {{ fill: #24292f; }}
+    }}
+  </style>
+""" + "\n".join(svg_lines) + "\n</svg>\n"
+    return svg_content
+
 def update_readme():
     stats = load_stats()
     
@@ -165,22 +252,21 @@ def update_readme():
     pkgs_count = get_packages()
     memory_str = get_memory()
 
-    content = f"""<pre>
-       /\\         <b>{user}</b>
-      /  \\        <b>os</b>        {os_name}
-     /\\   \\       <b>host</b>      {host_name}
-    /      \\      <b>kernel</b>    {kernel_name}
-   /   ,,   \\     <b>uptime</b>    {uptime_str}
-  /   |  |  -\\    <b>pkgs</b>      {pkgs_count}
- /_-''    ''-_\\   <b>memory</b>    {memory_str}
-</pre>
-"""
-    README_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with open(README_FILE, "w") as f:
-        f.write(content)
+    # Generate neofetch.svg
+    svg_content = generate_neofetch_svg(user, os_name, host_name, kernel_name, uptime_str, pkgs_count, memory_str)
+    with open(SVG_FILE, "w") as f:
+        f.write(svg_content)
 
-    print("README.md updated successfully:")
-    print(content)
+    # Generate README.md embedding neofetch.svg directly
+    readme_content = f"""<p align="left">
+  <img src="neofetch.svg" alt="{user}" />
+</p>
+"""
+    with open(README_FILE, "w") as f:
+        f.write(readme_content)
+
+    print("neofetch.svg and README.md updated successfully:")
+    print(svg_content)
 
 if __name__ == "__main__":
     update_readme()

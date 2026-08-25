@@ -184,9 +184,9 @@ def generate_neofetch_svg(user_header, os_name, host_name, kernel_name, uptime_s
     ]
 
     fontSize = 13
-    lineHeight = 21
-    paddingY = 12
-    paddingX = 8
+    lineHeight = 15.5
+    paddingY = 8
+    paddingX = 4
 
     max_line_len = 0
     for i in range(len(logo_lines)):
@@ -196,12 +196,12 @@ def generate_neofetch_svg(user_header, os_name, host_name, kernel_name, uptime_s
             max_line_len = len(line_str)
 
     charWidth = 7.8
-    width = int(max_line_len * charWidth) + paddingX * 2 + 20
-    height = len(logo_lines) * lineHeight + paddingY * 2
+    width = int(max_line_len * charWidth) + paddingX * 2 + 10
+    height = int(len(logo_lines) * lineHeight) + paddingY * 2
 
     svg_lines = []
     for i in range(len(logo_lines)):
-        y = paddingY + (i + 1) * lineHeight - 5
+        y = int(paddingY + (i + 1) * lineHeight - 3)
         logo = html.escape(logo_lines[i])
         title, val, is_header = info_rows[i]
         escaped_title = html.escape(title)

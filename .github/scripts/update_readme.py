@@ -174,6 +174,12 @@ def update_readme():
   /   |  |  -\\    <b>pkgs</b>      {pkgs_count}
  /_-''    ''-_\\   <b>memory</b>    {memory_str}
 </pre>
+
+<details>
+  <summary><b>📡 Live Visitor Connection Data</b></summary>
+  <br/>
+  <img src="https://ping.zamkara.uk/json.svg" alt="Live Visitor Data" />
+</details>
 """
     README_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(README_FILE, "w") as f:

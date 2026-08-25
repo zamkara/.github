@@ -14,11 +14,32 @@ README_FILE = REPO_ROOT / "profile" / "README.md"
 
 START_TIME = time.time()
 
+import urllib.request
+
 def get_kernel():
+    # Fetch latest official Arch Linux Zen kernel version from Arch repository API
     try:
-        return platform.release().strip()
+        url = "https://archlinux.org/packages/extra/x86_64/linux-zen/json/"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (GitHubActions)"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            pkgver = data.get("pkgver", "")
+            pkgrel = data.get("pkgrel", "")
+            if pkgver and pkgrel:
+                # Format: 7.1.9.zen1 + 2 -> 7.1.9-zen1-2-zen
+                return pkgver.replace(".zen", "-zen") + f"-{pkgrel}-zen"
+    except Exception as e:
+        print(f"Notice: Failed to fetch Arch Linux API ({e}), falling back...")
+
+    # Fallback if local arch zen kernel is detected or fallback release
+    try:
+        release = platform.release().strip()
+        if "zen" in release:
+            return release
     except Exception:
-        return "unknown"
+        pass
+
+    return "7.1.9-zen1-2-zen"
 
 def get_packages():
     # Try pacman first (if Arch), then dpkg (Ubuntu runner), then rpm

@@ -176,9 +176,9 @@ def update_readme():
 </pre>
 
 <details>
-  <summary><b>📡 Live Visitor Connection Data</b></summary>
+  <summary><b>ping.zamkara.uk/json</b></summary>
   <br/>
-  <img src="https://ping.zamkara.uk/json.svg" alt="Live Visitor Data" />
+  <img src="https://ping.zamkara.uk/json.svg" alt="ping.zamkara.uk/json" />
 </details>
 """
     README_FILE.parent.mkdir(parents=True, exist_ok=True)

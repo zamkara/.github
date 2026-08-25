@@ -2,8 +2,8 @@
        /\         zam@kara
       /  \        os     Arch Linux
      /\   \       host   ASUS TUF Gaming F15 FX506LH_FX506LH 1.0
-    /      \      kernel 7.1.8-zen1-3-zen
+    /      \      kernel 6.17.0-1022-azure
    /   ,,   \     uptime 0m
-  /   |  |  -\    pkgs   1365
- /_-''    ''-_\   memory 9652M / 15814M
+  /   |  |  -\    pkgs   1205
+ /_-''    ''-_\   memory 1004M / 15989M
 ```

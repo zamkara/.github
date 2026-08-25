@@ -165,15 +165,15 @@ def update_readme():
     pkgs_count = get_packages()
     memory_str = get_memory()
 
-    content = f"""```
-       /\\         {user}
-      /  \\        os     {os_name}
-     /\\   \\       host   {host_name}
-    /      \\      kernel {kernel_name}
-   /   ,,   \\     uptime {uptime_str}
-  /   |  |  -\\    pkgs   {pkgs_count}
- /_-''    ''-_\\   memory {memory_str}
-```
+    content = f"""<pre>
+       /\\         <b>{user}</b>
+      /  \\        <b>os</b>        {os_name}
+     /\\   \\       <b>host</b>      {host_name}
+    /      \\      <b>kernel</b>    {kernel_name}
+   /   ,,   \\     <b>uptime</b>    {uptime_str}
+  /   |  |  -\\    <b>pkgs</b>      {pkgs_count}
+ /_-''    ''-_\\   <b>memory</b>    {memory_str}
+</pre>
 """
     README_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(README_FILE, "w") as f:

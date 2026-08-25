@@ -1,0 +1,14 @@
+{
+  "distro": "arch",
+  "host": "ASUS TUF Gaming F15 FX506LH_FX506LH 1.0",
+  "user": "auto",
+  "kernel": "auto",
+  "uptime": "auto",
+  "pkgs": "auto",
+  "memory": "auto",
+  "custom_colors": {
+    "logo": "",
+    "title": "",
+    "value": ""
+  }
+}

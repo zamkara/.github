@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="124" viewBox="0 0 540 124">
+  <style>
+    text {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+    }
+    .logo { fill: #1793d1; font-weight: bold; }
+    .header { fill: #58a6ff; font-weight: bold; }
+    .title { fill: #58a6ff; font-weight: 600; }
+    .val { fill: #c9d1d9; }
+    @media (prefers-color-scheme: light) {
+      .header { fill: #0969da; }
+      .title { fill: #0969da; }
+      .val { fill: #24292f; }
+    }
+  </style>
+    <text x="4" y="20" xml:space="preserve"><tspan class="logo">       /\          </tspan><tspan class="header">zamkara@github</tspan></text>
+    <text x="4" y="36" xml:space="preserve"><tspan class="logo">      /  \         </tspan><tspan class="title">os        </tspan><tspan class="val">Arch Linux [x86_64]</tspan></text>
+    <text x="4" y="51" xml:space="preserve"><tspan class="logo">     /\   \       </tspan><tspan class="title">host      </tspan><tspan class="val">ASUS TUF Gaming F15 FX506LH_FX506LH 1.0</tspan></text>
+    <text x="4" y="67" xml:space="preserve"><tspan class="logo">    /      \       </tspan><tspan class="title">kernel    </tspan><tspan class="val">7.1.8-zen1-3-zen (x86_64)</tspan></text>
+    <text x="4" y="82" xml:space="preserve"><tspan class="logo">   /   ,,   \      </tspan><tspan class="title">uptime    </tspan><tspan class="val">8m 15s (33 runs)</tspan></text>
+    <text x="4" y="98" xml:space="preserve"><tspan class="logo">  /   |  |  -\     </tspan><tspan class="title">pkgs      </tspan><tspan class="val">1367 (pacman), 39 (flatpak)</tspan></text>
+    <text x="4" y="113" xml:space="preserve"><tspan class="logo"> /_-&#x27;&#x27;    &#x27;&#x27;-_\    </tspan><tspan class="title">memory    </tspan><tspan class="val">6278MiB / 15814MiB (39.7%)</tspan></text>
+</svg>

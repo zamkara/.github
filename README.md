@@ -1,3 +1,3 @@
 <p align="left">
-  <img src="neofetch.svg" alt="zamkara@github" />
+  <img src=".github/neofetch.svg" alt="zamkara@github" />
 </p>
